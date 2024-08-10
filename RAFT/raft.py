@@ -50,7 +50,7 @@ class RAFT(nn.Module):
             self.cnet = SmallEncoder(output_dim=hdim+cdim, norm_fn='none', dropout=args.dropout)
             self.update_block = SmallUpdateBlock(self.args, hidden_dim=hdim)
 
-        else:
+        else:#this is to be added to HF
             self.fnet = BasicEncoder(output_dim=256, norm_fn='instance', dropout=args.dropout)
             self.cnet = BasicEncoder(output_dim=hdim+cdim, norm_fn='batch', dropout=args.dropout)
             self.update_block = BasicUpdateBlock(self.args, hidden_dim=hdim)

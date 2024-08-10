@@ -170,6 +170,9 @@ def ternary_loss(flow_comp, flow_gt, mask, current_frame, shift_frame, scale_fac
     loss = ternary_loss2(current_frame, warped_comp_sc, noc_mask, mask)
     return loss
 
+
+
+#these losses are for training flow completion network
 class FlowLoss(nn.Module):
     def __init__(self):
         super().__init__()
