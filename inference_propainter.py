@@ -325,8 +325,10 @@ if __name__ == '__main__':
                 gt_flows_f = torch.cat(gt_flows_f_list, dim=1)
                 gt_flows_b = torch.cat(gt_flows_b_list, dim=1)
                 gt_flows_bi = (gt_flows_f, gt_flows_b)
+                gt_flows_bi_copy = gt_flows_bi
             else:
                 gt_flows_bi = fix_raft(frames, iters=args.raft_iter)
+                gt_flows_bi_copy = gt_flows_bi
                 torch.cuda.empty_cache()
 
 
@@ -362,9 +364,11 @@ if __name__ == '__main__':
                 pred_flows_f = torch.cat(pred_flows_f, dim=1)
                 pred_flows_b = torch.cat(pred_flows_b, dim=1)
                 pred_flows_bi = (pred_flows_f, pred_flows_b)
+                pred_flows_bi_copy = pred_flows_bi
             else:
                 pred_flows_bi, _ = fix_flow_complete.forward_bidirect_flow(gt_flows_bi, flow_masks)
                 pred_flows_bi = fix_flow_complete.combine_flow(gt_flows_bi, pred_flows_bi, flow_masks)
+                pred_flows_bi_copy = pred_flows_bi
                 torch.cuda.empty_cache()
                 
 
@@ -396,11 +400,15 @@ if __name__ == '__main__':
                     
                 updated_frames = torch.cat(updated_frames, dim=1)
                 updated_masks = torch.cat(updated_masks, dim=1)
+                updated_frames_copy = updated_frames
+                updated_masks_copy = updated_masks
             else:
                 b, t, _, _, _ = masks_dilated.size()
                 prop_imgs, updated_local_masks = model.img_propagation(masked_frames, pred_flows_bi, masks_dilated, 'nearest')
                 updated_frames = frames * (1 - masks_dilated) + prop_imgs.view(b, t, 3, h, w) * masks_dilated
                 updated_masks = updated_local_masks.view(b, t, 1, h, w)
+                updated_frames_copy = updated_frames
+                updated_masks_copy = updated_masks
                 torch.cuda.empty_cache()
                 
 
@@ -436,6 +444,7 @@ if __name__ == '__main__':
 
                 pred_img = (pred_img + 1) / 2
                 pred_img = pred_img.cpu().permute(0, 2, 3, 1).numpy() * 255
+                pred_img_copy = pred_img
                 binary_masks = masks_dilated[0, neighbor_ids, :, :, :].cpu().permute(
                     0, 2, 3, 1).numpy().astype(np.uint8)
                 for i in range(len(neighbor_ids)):
@@ -474,4 +483,4 @@ if __name__ == '__main__':
         print(f'\nAll results are saved in {save_root}')
 
         torch.cuda.empty_cache()
-        return  frames_inp_copy,frames_copy, flow_masks_cpoy, masks_dilated_copy, size_copy, comp_frames_copy
+        return  frames_inp_copy,frames_copy, flow_masks_cpoy, masks_dilated_copy, size_copy, comp_frames_copy,(gt_flows_bi_copy,pred_flows_bi_copy,updated_frames_copy,updated_masks_copy,pred_img_copy)
