@@ -85,7 +85,6 @@ def read_mask(mpath, length, size, flow_mask_dilates=8, mask_dilates=5):
         mnames = sorted(os.listdir(mpath))
         for mp in mnames:
             masks_img.append(Image.open(os.path.join(mpath, mp)))
-          
     for mask_img in masks_img:
         if size is not None:
             mask_img = mask_img.resize(size, Image.NEAREST)
@@ -222,6 +221,7 @@ if __name__ == '__main__':
             use_half = False
 
         frames, fps, size, video_name = read_frame_from_videos(args.video)
+        frames_out = frames
         if not args.width == -1 and not args.height == -1:
             size = (args.width, args.height)
         if not args.resize_ratio == 1.0:
@@ -261,7 +261,8 @@ if __name__ == '__main__':
             masked_frame_for_save.append(fuse_img.astype(np.uint8))
 
         frames_inp = [np.array(f).astype(np.uint8) for f in frames]
-        frames = to_tensors()(frames).unsqueeze(0) * 2 - 1    
+        frames = to_tensors()(frames).unsqueeze(0) * 2 - 1   
+        mask_img_out = flow_masks 
         flow_masks = to_tensors()(flow_masks).unsqueeze(0)
         masks_dilated = to_tensors()(masks_dilated).unsqueeze(0)
         frames, flow_masks, masks_dilated = frames.to(device), flow_masks.to(device), masks_dilated.to(device)
@@ -483,4 +484,4 @@ if __name__ == '__main__':
         print(f'\nAll results are saved in {save_root}')
 
         torch.cuda.empty_cache()
-        return  frames_inp_copy,frames_copy, flow_masks_cpoy, masks_dilated_copy, size_copy, comp_frames_copy,(gt_flows_bi_copy,pred_flows_bi_copy,updated_frames_copy,updated_masks_copy,pred_img_copy)
+        return  frames_inp_copy,frames_copy, flow_masks_cpoy, masks_dilated_copy, size_copy, comp_frames_copy, frames_out, mask_img_out

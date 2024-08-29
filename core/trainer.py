@@ -398,7 +398,7 @@ class Trainer:
                     p.requires_grad = False
 
             self.optimG.zero_grad()
-
+# pred_imgs, masks, frames,comp_images
             # generator l1 loss
             hole_loss = self.l1_loss(pred_imgs * masks, frames * masks)
             hole_loss = hole_loss / torch.mean(masks) * self.config['losses']['hole_weight']
